@@ -18,8 +18,7 @@ import logging
 import utils
 
 def getPrices(eod_dir, ticker_file, price_dir):
-  with open(ticker_file, 'r') as fp:
-    tickers = sorted(fp.read().splitlines())
+  tickers = utils.readTickers(ticker_file)
   logging.info('processing %d tickers' % len(tickers))
 
   for ticker in tickers:

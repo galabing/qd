@@ -32,6 +32,10 @@ def updateListDict(list_dict, key, value):
   if key not in list_dict: list_dict[key] = [value]
   else: list_dict[key].append(value)
 
+def readTickers(ticker_file):
+  with open(ticker_file, 'r') as fp:
+    return sorted(fp.read().splitlines())
+
 def readL1(lines):
   """ Reads l1 file into a dict: date => {indicator: value}.
   """
@@ -39,7 +43,7 @@ def readL1(lines):
   headers = lines[0].split('\t')
   assert len(headers) > 0
   assert all([header != '' for header in headers])
-  assert headers[0] == 'date'
+  assert headers[0] == 'date', 'unknown key column: %s' % headers[0]
   data = dict()
   for i in range(1, len(lines)):
     items = lines[i].split('\t')
@@ -50,6 +54,11 @@ def readL1(lines):
         row[headers[j]] = float(items[j])
     data[items[0]] = row
   return data
+
+def readL1File(l1_file):
+  with open(l1_file, 'r') as fp:
+    lines = fp.read().splitlines()
+  return readL1(lines)
 
 def computeFeatureStats(features):
   """ Computes feature stats.
@@ -80,4 +89,28 @@ def computeFeatureStats(features):
       stats[y] = [0, n, None, None, None, None, None, None, None,
                   None, None, None]
   return stats
+
+def i2s(i):
+  return '%d' % i
+
+def f2s(f):
+  return '%.6f' % f
+
+def p2s(p):
+  return '%.2f%%' % (p*100)
+
+def writeFeatureStats(features, stats_file):
+  stats = computeFeatureStats(features)
+  with open(stats_file, 'w') as fp:
+    print >> fp, '\t'.join(['year', 'count', 'total', 'coverage',
+                            'avg', 'min', '1perc', '10perc', '25perc',
+                            '50perc', '75perc', '90perc', '99perc', 'max'])
+    for year in sorted(stats.keys()):
+      count, total, avg, min_, p1, p10, p25, p50, p75, p90, p99, max_ = (
+          stats[year])
+      coverage = float(count)/total
+      print >> fp, '\t'.join([year, i2s(count), i2s(total), p2s(coverage),
+                              f2s(avg), f2s(min_), f2s(p1), f2s(p10),
+                              f2s(p25), f2s(p50), f2s(p75), f2s(p90),
+                              f2s(p99), f2s(max_)])
 
