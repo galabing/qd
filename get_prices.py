@@ -17,10 +17,6 @@ import argparse
 import logging
 import utils
 
-def getDate(ymd):
-  y, m, d = ymd.split('-')
-  return '%s-%s' % (y, m)
-
 def getPrices(eod_dir, ticker_file, price_dir):
   with open(ticker_file, 'r') as fp:
     tickers = sorted(fp.read().splitlines())
@@ -39,7 +35,7 @@ def getPrices(eod_dir, ticker_file, price_dir):
         adj_close = items[-2]
         if date == '' or adj_close == '':
           continue
-        date = getDate(date)
+        date = utils.getYm(date)
         if date == prev_date:
           continue
         prev_date = date

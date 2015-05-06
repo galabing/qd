@@ -10,6 +10,15 @@
     l1_dir/<ticker>, one for each dimension.  Output files are in tsv format,
     with first column being date, and the rest being sorted indicators.
     Rows are sorted by date.
+
+    The current output format is a compromise between readability and data
+    size.  Dimensions like ARQ are pretty dense (a ticker tends to have the
+    same set of indicators in every ARQ) so size wise this is good.  ND tends
+    to be very sparse, but ND itself doesn't have much data.
+
+    Test: https://docs.google.com/spreadsheets/d/1rgq4S3Nijrzt9o8-hrxcPbFErTKcdjJ_e68QpU4UPyo/edit#gid=0
+    Manually verified cells B2, B9, P13, AX46 for AAPL-ARQ and B2, G9, J209
+    for AAPL-ND by comparing against the raw file.
 """
 
 import argparse

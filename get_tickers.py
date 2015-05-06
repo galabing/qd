@@ -25,21 +25,6 @@ class Status:
   END = 1
   MISS = 2
 
-def getDate(ymd):
-  y, m, d = ymd.split('-')
-  return '%s-%s' % (y, m)
-
-def getNextDate(ym):
-  y, m = ym.split('-')
-  y = int(y)
-  m = int(m)
-  if m < 12:
-    m += 1
-  else:
-    y += 1
-    m = 1
-  return '%02d-%02d' % (y, m)
-
 def checkEod(eod_file):
   with open(eod_file, 'r') as fp:
     lines = fp.read().splitlines()
@@ -48,10 +33,10 @@ def checkEod(eod_file):
     items = line.split(',')
     assert len(items) == 14
     date = items[1]
-    adj_close = items[-1]
+    adj_close = items[-2]
     if date == '' or adj_close == '':
       continue
-    dates.add(getDate(date))
+    dates.add(utils.getYm(date))
   min_date = min(dates)
   max_date = max(dates)
   if max_date != TARGET_DATE:
@@ -63,7 +48,7 @@ def checkEod(eod_file):
   while date <= max_date:
     if date not in dates:
       return Status.MISS
-    date = getNextDate(date)
+    date = utils.getNextYm(date)
   return Status.OK
 
 def getTickers(sf1_dir, eod_dir, ticker_file):

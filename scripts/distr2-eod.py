@@ -68,7 +68,7 @@ for ticker in tickers:
     items = line.split(',')
     assert len(items) == 14
     date = items[1]
-    adj_close = items[-1]
+    adj_close = items[-2]
     if date == '' or adj_close == '':
       continue
     date = getDate(date)
