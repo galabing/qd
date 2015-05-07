@@ -31,13 +31,13 @@ def test_updateListDict():
   utils.updateListDict(d, 'key2', 3)
   assert d == {'key1': [1, 2], 'key2': [3]}
 
-def test_readL1():
+def test_parseL1():
   lines = (
       'date\tABC\tXYZ',
       '1984-02-22\t1\t2',
       '2000-01-01\t\t',
       '2015-05-05\t\t-123')
-  data = utils.readL1(lines)
+  data = utils.parseL1(lines)
   assert data == {
       '1984-02-22': {'ABC': 1.0, 'XYZ': 2.0},
       '2000-01-01': {},

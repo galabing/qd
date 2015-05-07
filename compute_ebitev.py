@@ -26,10 +26,9 @@ def computeEbitev(l1_dir, ticker_file, ebitev_dir, stats_file=None):
     if not os.path.isfile(dimension_file):
       logging.warning('dimension file does not exist: %s' % dimension_file)
       continue
-    data = utils.readL1File(dimension_file)
+    devebits = utils.readL1Column(dimension_file, EVEBIT_HEADER)
     with open('%s/%s' % (ebitev_dir, ticker), 'w') as fp:
-      for date in sorted(data.keys()):
-        evebit = data[date].get(EVEBIT_HEADER)
+      for date, evebit in devebits:
         if evebit is not None and evebit != 0:
           ebitev = 1/evebit
           print >> fp, '%s\t%f' % (date, ebitev)

@@ -36,8 +36,8 @@ def readTickers(ticker_file):
   with open(ticker_file, 'r') as fp:
     return sorted(fp.read().splitlines())
 
-def readL1(lines):
-  """ Reads l1 file into a dict: date => {indicator: value}.
+def parseL1(lines):
+  """ Parses l1 lines into a dict: date => {indicator: value}.
   """
   assert len(lines) > 0
   headers = lines[0].split('\t')
@@ -58,7 +58,15 @@ def readL1(lines):
 def readL1File(l1_file):
   with open(l1_file, 'r') as fp:
     lines = fp.read().splitlines()
-  return readL1(lines)
+  return parseL1(lines)
+
+def readL1Column(l1_file, header):
+  data = readL1File(l1_file)
+  dcolumn = []
+  for date in sorted(data.keys()):
+    feature = data[date].get(header)
+    dcolumn.append([date, feature])
+  return dcolumn
 
 def readKeyValueFile(kv_file):
   """ Reads features or gains file with each line being <key>\t<value>,

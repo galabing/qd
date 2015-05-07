@@ -17,8 +17,11 @@ def main():
 
   with open(args.input_file, 'r') as fp:
     lines = fp.read().splitlines()
+  print 'before sampling: %d' % len(lines)
   if len(lines) > args.sample_size:
     lines = random.sample(lines, args.sample_size)
+  print 'after sampling: %d' % len(lines)
+
   x = []
   y = []
   skip_stats = {'minx': 0, 'maxx': 0, 'miny': 0, 'maxy': 0}
@@ -41,6 +44,8 @@ def main():
     x.append(feature)
     y.append(gain)
   print 'skip_stats: %s' % skip_stats
+  print 'plotting %d points' % len(x)
+
   pyplot.scatter(x, y, marker='.', s=5, linewidth=0)
   pyplot.axhline(y=sum(y)/len(y), color='r')
   pyplot.show()
