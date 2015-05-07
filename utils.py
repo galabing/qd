@@ -60,6 +60,18 @@ def readL1File(l1_file):
     lines = fp.read().splitlines()
   return readL1(lines)
 
+def readKeyValueFile(kv_file):
+  """ Reads features or gains file with each line being <key>\t<value>,
+      into a list of [[key, value], ...]
+  """
+  with open(kv_file, 'r') as fp:
+    lines = fp.read().splitlines()
+  kv = []
+  for line in lines:
+    k, v = line.split('\t')
+    kv.append([k, float(v)])
+  return kv
+
 def computeFeatureStats(features):
   """ Computes feature stats.
       features: [(y, f), (y, f), ...] where f is either float or None
