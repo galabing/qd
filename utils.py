@@ -1,4 +1,5 @@
 import logging
+import os
 
 def configLogging(level=logging.INFO):
   logging.basicConfig(format='[%(levelname)s] %(asctime)s %(message)s',
@@ -61,6 +62,9 @@ def readL1File(l1_file):
   return parseL1(lines)
 
 def readL1Column(l1_file, header):
+  if not os.path.isfile(l1_file):
+    logging.warning('%s does not exist, skipping' % l1_file)
+    return None
   data = readL1File(l1_file)
   dcolumn = []
   for date in sorted(data.keys()):

@@ -6,6 +6,8 @@
       ./compute_ebitev.py --l1_dir=./l1
                           --ticker_file=./tickers
                           --ebitev_dir=./ebitev
+
+    Tested by spot checking a few entries for A.
 """
 
 import argparse
@@ -23,10 +25,9 @@ def computeEbitev(l1_dir, ticker_file, ebitev_dir, stats_file=None):
   for ticker in tickers:
     logging.info(ticker)
     dimension_file = '%s/%s/%s.tsv' % (l1_dir, ticker, DIMENSION)
-    if not os.path.isfile(dimension_file):
-      logging.warning('dimension file does not exist: %s' % dimension_file)
-      continue
     devebits = utils.readL1Column(dimension_file, EVEBIT_HEADER)
+    if devebits is None:
+      continue
     with open('%s/%s' % (ebitev_dir, ticker), 'w') as fp:
       for date, evebit in devebits:
         if evebit is not None and evebit != 0:
