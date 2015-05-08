@@ -123,9 +123,10 @@ def f2s(f):
 def p2s(p):
   return '%.2f%%' % (p*100)
 
-def writeFeatureStats(features, stats_file):
+def writeFeatureInfo(args, features, info_file):
   stats = computeFeatureStats(features)
-  with open(stats_file, 'w') as fp:
+  with open(info_file, 'w') as fp:
+    print >> fp, 'args: %s' % args
     print >> fp, '\t'.join(['year', 'count', 'total', 'coverage',
                             'avg', 'min', '1perc', '10perc', '25perc',
                             '50perc', '75perc', '90perc', '99perc', 'max'])
