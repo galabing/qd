@@ -11,16 +11,17 @@
                         --window=120
                         --min_feature_perc=0.8
                         --data_file=./data
+                        --label_file=./label
                         --meta_file=./meta
 
     For each ticker, gains within specified min/max date are collected.
     For each dated gain, features are joined by looking back a specified max
     window and using the most recent value (or 0 if not found).
 
-    Two files are written:
-    data_file: matrix of gain + features delimited by tab, features delimited
-               by space.  Features are in the same order as specified by
-               feature_list.
+    Three files are written:
+    data_file: matrix of features delimited by space.  Features are in the
+               same order as specified by feature_list.
+    label_file: list of gains corresponding to each row in data_file.
     meta_file: ticker, gain date and feature count corresponding to each row
                in data_file.
 """
@@ -41,7 +42,7 @@ def readFeatureList(feature_list_file):
 
 def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
                 min_date, max_date, window, min_feature_perc,
-                data_file, meta_file):
+                data_file, label_file, meta_file):
   tickers = utils.readTickers(ticker_file)
   logging.info('processing %d tickers' % len(tickers))
 
@@ -52,6 +53,7 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
   min_feature_count = int(len(feature_list) * min_feature_perc)
 
   data_fp = open(data_file, 'w')
+  label_fp = open(label_file, 'w')
   meta_fp = open(meta_file, 'w')
 
   skip_stats = {'gain_file': 0,
@@ -120,13 +122,14 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
         skip_stats['min_perc'] += 1
         continue
 
-      print >> data_fp, '%f\t%s' % (gain, ' '.join(
-          ['%f' % feature for feature in features]))
+      print >> data_fp, ' '.join(['%f' % feature for feature in features])
+      print >> label_fp, '%f' % gain
       print >> meta_fp, '%s\t%s\t%d' % (ticker, gain_date, feature_count)
 
     if DEBUG: break
 
   data_fp.close()
+  label_fp.close()
   meta_fp.close()
   logging.info('skip_stats: %s' % skip_stats)
 
@@ -144,12 +147,14 @@ def main():
                       help='only use a feature vector if at least certain '
                            'perc of features are populated')
   parser.add_argument('--data_file', required=True)
+  parser.add_argument('--label_file', required=True)
   parser.add_argument('--meta_file', required=True)
   args = parser.parse_args()
   utils.configLogging()
   collectData(args.ticker_file, args.gain_dir, args.feature_base_dir,
               args.feature_list, args.min_date, args.max_date, args.window,
-              args.min_feature_perc, args.data_file, args.meta_file)
+              args.min_feature_perc, args.data_file, args.label_file,
+              args.meta_file)
 
 if __name__ == '__main__':
   main()
