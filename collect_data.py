@@ -6,6 +6,7 @@
       ./collect_data.py --gain_dir=./gains/1
                         --feature_base_dir=./features
                         --feature_list=./feature_list
+                        --feature_stats=./feature_stats
                         --min_date=2005-01-01
                         --max_date=2006-12-31
                         --window=120
@@ -40,17 +41,37 @@ def readFeatureList(feature_list_file):
     return [line for line in fp.read().splitlines()
             if not line.startswith('#')]
 
+def readFeatureRanges(feature_stats_file):
+  with open(feature_stats_file, 'r') as fp:
+    lines = fp.read().splitlines()
+  assert len(lines) > 0
+  assert lines[0] == 'feature\\stats\tcoverage\t1perc\t99perc'
+  feature_ranges = dict()
+  for i in range(1, len(lines)):
+    feature, coverage, perc1, perc99 = lines[i].split('\t')
+    perc1 = float(perc1)
+    perc99 = float(perc99)
+    feature_ranges[feature] = [perc1, perc99]
+  return feature_ranges
+
 def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
-                min_date, max_date, window, min_feature_perc,
-                data_file, label_file, meta_file):
+                feature_stats_file, min_date, max_date, window,
+                min_feature_perc, data_file, label_file, meta_file):
   tickers = utils.readTickers(ticker_file)
   logging.info('processing %d tickers' % len(tickers))
 
   feature_list = readFeatureList(feature_list_file)
   logging.info('using %d features' % len(feature_list))
-  for feature in feature_list:
-    logging.info('  %s' % feature)
   min_feature_count = int(len(feature_list) * min_feature_perc)
+
+  feature_ranges = readFeatureRanges(feature_stats_file)
+  for feature in feature_list:
+    if feature not in feature_ranges:
+      assert feature.startswith('pgain') or feature.startswith('pegain'), (
+          'no range info for feature %s' % feature)
+      feature_ranges[feature] = [float('-Inf'), float('Inf')]
+    lower, upper = feature_ranges[feature]
+    logging.info('  %s: [%f, %f]' % (feature, lower, upper))
 
   data_fp = open(data_file, 'w')
   label_fp = open(label_file, 'w')
@@ -62,7 +83,9 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
                 'min_date': 0,
                 'max_date': 0,
                 'window': 0,
-                'min_perc': 0}
+                'min_perc': 0,
+                '1_perc': 0,
+                '99_perc': 0}
 
   for ticker in tickers:
     logging.info(ticker)
@@ -110,12 +133,20 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
           skip_stats['window'] += 1
           continue
 
+        feature = feature_items[i][index][1]
+        lower, upper = feature_ranges[feature_list[i]]
+        if feature < lower:
+          skip_stats['1_perc'] += 1
+          continue
+        if feature > upper:
+          skip_stats['99_perc'] += 1
+          continue
+
         if DEBUG:
           print 'feature %s: (%s, %f)' % (
-              feature_list[i], feature_items[i][index][0],
-              feature_items[i][index][1])
+              feature_list[i], feature_items[i][index][0], feature)
 
-        features[i] = feature_items[i][index][1]
+        features[i] = feature
         feature_count += 1
 
       if feature_count < min_feature_count:
@@ -139,6 +170,9 @@ def main():
   parser.add_argument('--gain_dir', required=True)
   parser.add_argument('--feature_base_dir', required=True)
   parser.add_argument('--feature_list', required=True)
+  parser.add_argument('--feature_stats', required=True,
+                      help='feature stats file with 1/99 percentiles '
+                           'to filter out bad feature values')
   parser.add_argument('--min_date', default='0000-00-00')
   parser.add_argument('--max_date', default='9999-99-99')
   # Most features have a max lag of one quarter.
@@ -152,9 +186,9 @@ def main():
   args = parser.parse_args()
   utils.configLogging()
   collectData(args.ticker_file, args.gain_dir, args.feature_base_dir,
-              args.feature_list, args.min_date, args.max_date, args.window,
-              args.min_feature_perc, args.data_file, args.label_file,
-              args.meta_file)
+              args.feature_list, args.feature_stats, args.min_date,
+              args.max_date, args.window, args.min_feature_perc,
+              args.data_file, args.label_file, args.meta_file)
 
 if __name__ == '__main__':
   main()
