@@ -42,7 +42,7 @@ def getModels(model_dir):
       models.append(item)
   return sorted(models)
 
-def computeGainDistribution(
+def computeDetailedGainDistribution(
     model_file, data_file, label_file, meta_file, num_buckets):
   with open(model_file, 'rb') as fp:
     model = pickle.load(fp)
@@ -72,8 +72,9 @@ def computeGainDistribution(
   print 'aggregating %d dates from %s to %s' % (
       len(meta_dict), min(meta_dict.keys()), max(meta_dict.keys()))
 
-  distr = [0.0 for i in range(num_buckets)]
+  distrs = dict()
   for ym, items in meta_dict.iteritems():
+    distr = [0.0 for i in range(num_buckets)]
     items = sorted(items, key=lambda item: item[0], reverse=True)
     bucket_size = len(items) / num_buckets
     print '%s: %d tickers, %d per bucket' % (
@@ -84,8 +85,19 @@ def computeGainDistribution(
       if i == num_buckets - 1:
         end = len(items)
       gains = [items[j][1] for j in range(start, end)]
-      distr[i] += sum(gains) / len(gains)
+      distr[i] = sum(gains) / len(gains)
+    distrs[ym] = distr
+  return distrs
+
+def computeGainDistribution(
+    model_file, data_file, label_file, meta_file, num_buckets):
+  distrs = computeDetailedGainDistribution(
+      model_file, data_file, label_file, meta_file, num_buckets)
+  distr = [0.0 for i in range(num_buckets)]
+  for row in distrs.itervalues():
+    for i in range(num_buckets):
+      distr[i] += row[i]
   for i in range(num_buckets):
-    distr[i] /= len(meta_dict)
+    distr[i] /= len(distrs)
   return distr
 
