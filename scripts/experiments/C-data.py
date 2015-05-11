@@ -6,14 +6,14 @@ def run(cmd):
   print 'running command: %s' % cmd
   assert os.system(cmd) == 0
 
-def collect(sector, folder, min_date='0000-00-00', max_date='9999-99-99'):
+def collect(folder, min_date='0000-00-00', max_date='9999-99-99'):
   collector = '/Users/lnyang/lab/qd/qd/collect_reg_data.py'
   data_dir = '/Users/lnyang/lab/qd/data'
-  exp_dir = '/Users/lnyang/lab/qd/data/experiments/B'
-  folder_dir = '%s/%s/%s' % (exp_dir, sector, folder)
+  exp_dir = '/Users/lnyang/lab/qd/data/experiments/C'
+  folder_dir = '%s/%s' % (exp_dir, folder)
 
-  ticker_file = '%s/ticker_groups/sectors/sector_%s' % (data_dir, sector)
-  gain_dir = '%s/gains/1' % data_dir
+  ticker_file = '%s/tickers' % data_dir
+  gain_dir = '%s/gains/12' % data_dir
   feature_base_dir = '%s/features' % data_dir
   feature_list = '%s/feature_list' % exp_dir
   feature_stats = '%s/misc/stats.tsv' % feature_base_dir
@@ -30,19 +30,7 @@ def collect(sector, folder, min_date='0000-00-00', max_date='9999-99-99'):
              data_file, label_file, meta_file))
   run(cmd)
 
-sectors = [
-    'Basic-Materials',
-    'Consumer-Goods',
-    'Financial',
-    'Healthcare',
-    'Industrial-Goods',
-    'Services',
-    'Technology',
-    'Utilities',
-]
-
-for sector in sectors:
-  collect(sector, 'train', max_date='2010-12-31')
-  collect(sector, 'validate', min_date='2011-02-01', max_date='2012-12-31')
-  collect(sector, 'test', min_date='2013-02-01')
+collect('train', max_date='2010-12-31')
+collect('validate', min_date='2012-01-01', max_date='2012-12-31')
+collect('test', min_date='2014-01-01')
 

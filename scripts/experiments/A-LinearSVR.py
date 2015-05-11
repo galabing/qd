@@ -9,8 +9,11 @@ train_dir = '%s/train' % base_dir
 model_dir = '%s/models' % base_dir
 validate_dir = '%s/validate' % base_dir
 
-percs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-alphas = [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+#percs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+#alphas = [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+
+percs = [1.0]
+alphas = [0.003, 0.03, 0.3, 3.0, 30.0, 300.0]
 
 data_file = '%s/data' % train_dir
 label_file = '%s/label' % train_dir

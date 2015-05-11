@@ -1,28 +1,32 @@
 #!/usr/bin/python
 
-""" Collects data for experiments.
+""" Collects data for classification experiments.
 
     Example usage:
-      ./collect_data.py --gain_dir=./gains/1
-                        --feature_base_dir=./features
-                        --feature_list=./feature_list
-                        --feature_stats=./feature_stats
-                        --min_date=2005-01-01
-                        --max_date=2006-12-31
-                        --window=120
-                        --min_feature_perc=0.8
-                        --data_file=./data
-                        --label_file=./label
-                        --meta_file=./meta
+      ./collect_cls_data.py --gain_dir=./gains/1
+                            --max_neg=0.01
+                            --min_pos=0.01
+                            --use_weights
+                            --feature_base_dir=./features
+                            --feature_list=./feature_list
+                            --feature_stats=./feature_stats
+                            --min_date=2005-01-01
+                            --max_date=2006-12-31
+                            --window=120
+                            --min_feature_perc=0.8
+                            --data_file=./data
+                            --label_file=./label
+                            --meta_file=./meta
 
-    For each ticker, gains within specified min/max date are collected.
+    For each ticker, gains within specified min/max date are collected, and
+    classified into positive/negative according to the thresholds.
     For each dated gain, features are joined by looking back a specified max
     window and using the most recent value (or 0 if not found).
 
     Three files are written:
     data_file: matrix of features delimited by space.  Features are in the
                same order as specified by feature_list.
-    label_file: list of gains corresponding to each row in data_file.
+    label_file: list of labels corresponding to each row in data_file.
     meta_file: ticker, gain date and feature count corresponding to each row
                in data_file.
 """
@@ -34,7 +38,7 @@ import logging
 import os
 import utils
 
-DEBUG = False
+DEBUG = True
 
 def readFeatureList(feature_list_file):
   with open(feature_list_file, 'r') as fp:
@@ -54,9 +58,10 @@ def readFeatureRanges(feature_stats_file):
     feature_ranges[feature] = [perc1, perc99]
   return feature_ranges
 
-def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
-                feature_stats_file, min_date, max_date, window,
-                min_feature_perc, data_file, label_file, meta_file):
+def collectData(ticker_file, gain_dir, max_neg, min_pos, feature_base_dir,
+                feature_list_file, feature_stats_file, min_date, max_date,
+                window, min_feature_perc, data_file, label_file, meta_file,
+                weight_file):
   tickers = utils.readTickers(ticker_file)
   logging.info('processing %d tickers' % len(tickers))
 
@@ -76,12 +81,16 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
   data_fp = open(data_file, 'w')
   label_fp = open(label_file, 'w')
   meta_fp = open(meta_file, 'w')
+  weight_fp = None
+  if weight_file:
+    weight_fp = open(weight_file, 'w')
 
   skip_stats = {'gain_file': 0,
                 'feature_file': 0,
                 'index': 0,
                 'min_date': 0,
                 'max_date': 0,
+                'neg_pos': 0,
                 'window': 0,
                 'min_perc': 0,
                 '1_perc': 0,
@@ -113,8 +122,20 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
         skip_stats['max_date'] += 1
         continue
 
+      if max_neg < gain and gain < min_pos:
+        skip_stats['neg_pos'] += 1
+        continue
+
       if DEBUG:
         print 'gain: %f (%s)' % (gain, gain_date)
+
+      if gain <= max_neg:
+        weight = max_neg - gain
+        gain = 0.0
+      else:
+        assert gain >= min_pos
+        weight = gain - min_pos
+        gain = 1.0
 
       features = [0.0 for i in range(len(feature_list))]
       feature_count = 0
@@ -156,18 +177,24 @@ def collectData(ticker_file, gain_dir, feature_base_dir, feature_list_file,
       print >> data_fp, ' '.join(['%f' % feature for feature in features])
       print >> label_fp, '%f' % gain
       print >> meta_fp, '%s\t%s\t%d' % (ticker, gain_date, feature_count)
+      if weight_fp:
+        print >> weight_fp, '%f' % weight
 
     if DEBUG: break
 
   data_fp.close()
   label_fp.close()
   meta_fp.close()
+  if weight_fp:
+    weight_fp.close()
   logging.info('skip_stats: %s' % skip_stats)
 
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--ticker_file', required=True)
   parser.add_argument('--gain_dir', required=True)
+  parser.add_argument('--max_neg', type=float, default=0.01)
+  parser.add_argument('--min_pos', type=float, default=0.01)
   parser.add_argument('--feature_base_dir', required=True)
   parser.add_argument('--feature_list', required=True)
   parser.add_argument('--feature_stats', required=True,
@@ -183,12 +210,18 @@ def main():
   parser.add_argument('--data_file', required=True)
   parser.add_argument('--label_file', required=True)
   parser.add_argument('--meta_file', required=True)
+  parser.add_argument('--weight_file',
+                      help='if specified, will assign a weight to each '
+                           'training sample with its distance to the '
+                           'pos/neg threshold')
   args = parser.parse_args()
+  assert args.max_neg <= args.min_pos, 'max_neg > min_pos: %f vs %f' % (
+      args.max_neg, args.min_pos)
   utils.configLogging()
-  collectData(args.ticker_file, args.gain_dir, args.feature_base_dir,
-              args.feature_list, args.feature_stats, args.min_date,
-              args.max_date, args.window, args.min_feature_perc,
-              args.data_file, args.label_file, args.meta_file)
+  collectData(args.ticker_file, args.gain_dir, args.max_neg, args.min_pos,
+              args.feature_base_dir, args.feature_list, args.feature_stats,
+              args.min_date, args.max_date, args.window, args.min_feature_perc,
+              args.data_file, args.label_file, args.meta_file, args.weight_file)
 
 if __name__ == '__main__':
   main()
