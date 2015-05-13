@@ -1,6 +1,8 @@
+from matplotlib import pyplot
 import numpy
 import os
 import pickle
+import pylab
 import sys
 
 def run(cmd):
@@ -43,7 +45,8 @@ def getModels(model_dir):
   return sorted(models)
 
 def computeDetailedGainDistribution(
-    model_file, data_file, label_file, meta_file, num_buckets):
+    model_file, data_file, label_file, meta_file, num_buckets,
+    plot_file=None):
   with open(model_file, 'rb') as fp:
     model = pickle.load(fp)
   print 'model: %s' % model
@@ -54,6 +57,13 @@ def computeDetailedGainDistribution(
   print 'y.shape: %s' % str(y.shape)
 
   p = model.predict(X)
+
+  if plot_file:
+    pyplot.clf()
+    pyplot.scatter(p, y, marker='.', s=5, linewidth=0)
+    pyplot.axhline(y=y.mean(), color='r')
+    pyplot.axvline(x=p.mean(), color='r')
+    pylab.savefig(plot_file)
 
   with open(meta_file, 'r') as fp:
     lines = fp.read().splitlines()
