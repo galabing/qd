@@ -55,7 +55,7 @@ def main():
                       help='use raw instead of adj close')
   args = parser.parse_args()
   utils.configLogging()
-  getPrices(args.eod_dir, args.ticker_file, use_raw, args.price_dir)
+  getPrices(args.eod_dir, args.ticker_file, args.use_raw, args.price_dir)
 
 if __name__ == '__main__':
   main()

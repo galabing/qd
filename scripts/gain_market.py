@@ -4,16 +4,21 @@
 """
 
 data_dir = '/Users/lnyang/lab/qd/data'
-gain_dir = '%s/tmp/gains10/12' % data_dir
+
+min_price = 10
+window = 1
+market = 'R3000'
+
+gain_dir = '%s/gains%d/%d' % (data_dir, min_price, window)
 
 ticker_file = '%s/tickers' % data_dir
-#market_file = '%s/yahoo/SP500/gains/12/SP500' % data_dir
-market_file = '%s/yahoo/R3000/gains/12/R3000' % data_dir
+market_file = '%s/yahoo/%s/gains/%d/%s' % (data_dir, market, window, market)
 
 min_date = '2004-01-01'
 max_date = '9999-99-99'
 
-output_file = '%s/misc/gain10_R3000.tsv' % data_dir
+output_file = '%s/misc/gains%d_%d_%s.tsv' % (
+    data_dir, min_price, window, market)
 
 with open(ticker_file, 'r') as fp:
   tickers = sorted(fp.read().splitlines())

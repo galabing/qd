@@ -35,6 +35,39 @@ def computeError(model_file, data_file, label_file):
   r2 = model.score(X, y)
   return m, se, r2
 
+def computeClsError(model_file, data_file, label_file):
+  print 'computing error for'
+  print '  model: %s' % model_file
+  print '  data: %s' % data_file
+  print '  label: %s' % label_file
+  with open(model_file, 'rb') as fp:
+    model = pickle.load(fp)
+  print 'model: %s' % model
+  X = numpy.loadtxt(data_file)
+  print 'X.shape: %s' % str(X.shape)
+  y = numpy.loadtxt(label_file)
+  print 'y.shape: %s' % str(y.shape)
+
+  p = model.predict(X)
+  m = X.shape[0]
+  tp = 0
+  tn = 0
+  fp = 0
+  fn = 0
+  for i in range(m):
+    positive = p[i] > 0.5
+    if positive:
+      if y[i] > 0.5:
+        tp += 1
+      else:
+        fp += 1
+    else:
+      if y[i] > 0.5:
+        fn += 1
+      else:
+        tn += 1
+  return tp, tn, fp, fn
+
 def getModels(model_dir):
   items = os.listdir(model_dir)
   models = []

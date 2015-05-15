@@ -27,8 +27,8 @@
     data_file: matrix of features delimited by space.  Features are in the
                same order as specified by feature_list.
     label_file: list of labels corresponding to each row in data_file.
-    meta_file: ticker, gain date and feature count corresponding to each row
-               in data_file.
+    meta_file: ticker, gain date and feature count, and actual gain
+               corresponding to each row in data_file.
 """
 
 import argparse
@@ -38,7 +38,7 @@ import logging
 import os
 import utils
 
-DEBUG = True
+DEBUG = False
 
 def readFeatureList(feature_list_file):
   with open(feature_list_file, 'r') as fp:
@@ -131,11 +131,11 @@ def collectData(ticker_file, gain_dir, max_neg, min_pos, feature_base_dir,
 
       if gain <= max_neg:
         weight = max_neg - gain
-        gain = 0.0
+        label = 0.0
       else:
         assert gain >= min_pos
         weight = gain - min_pos
-        gain = 1.0
+        label = 1.0
 
       features = [0.0 for i in range(len(feature_list))]
       feature_count = 0
@@ -175,8 +175,9 @@ def collectData(ticker_file, gain_dir, max_neg, min_pos, feature_base_dir,
         continue
 
       print >> data_fp, ' '.join(['%f' % feature for feature in features])
-      print >> label_fp, '%f' % gain
-      print >> meta_fp, '%s\t%s\t%d' % (ticker, gain_date, feature_count)
+      print >> label_fp, '%f' % label
+      print >> meta_fp, '%s\t%s\t%d\t%f' % (
+          ticker, gain_date, feature_count, gain)
       if weight_fp:
         print >> weight_fp, '%f' % weight
 
