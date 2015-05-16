@@ -72,7 +72,10 @@ def collectData(ticker_file, gain_dir, max_neg, min_pos, feature_base_dir,
   feature_ranges = readFeatureRanges(feature_stats_file)
   for feature in feature_list:
     if feature not in feature_ranges:
-      assert feature.startswith('pgain') or feature.startswith('pegain'), (
+      assert (feature.startswith('pgain') or
+              feature.startswith('pegain') or
+              feature.startswith('logprice') or
+              feature.startswith('logvolume')), (
           'no range info for feature %s' % feature)
       feature_ranges[feature] = [float('-Inf'), float('Inf')]
     lower, upper = feature_ranges[feature]

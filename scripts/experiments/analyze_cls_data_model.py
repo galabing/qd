@@ -37,7 +37,7 @@ def inspectModel(model_file, fl_file):
   feature_coef = [[features[i], coef[i]] for i in range(len(features))]
   feature_coef.sort(key=lambda item: abs(item[1]), reverse=True)
   print '%d feature coeffs:' % len(feature_coef)
-  if len(feature_coef) <= 20:
+  if len(feature_coef) <= 200:
     for feature, coef in feature_coef:
       print '  %s: %f' % (feature, coef)
   else:
@@ -116,7 +116,7 @@ def analyze(model, data, label, meta, per_month, percs):
       #    print '      %s %s: %.2f%%' % (
       #        item[3], item[4], item[2]*100)
 
-exp_dir = '/Users/lnyang/lab/qd/data/experiments/L'
+exp_dir = '/Users/lnyang/lab/qd/data/experiments/N'
 
 model_dir = '%s/models' % exp_dir
 model = 'LogisticRegression-1.000000-1.000000'
@@ -127,6 +127,7 @@ validate_dir = '%s/validate' % exp_dir
 test_dir = '%s/test' % exp_dir
 
 percs = [0.001, 0.01, 0.1, 0.5]
+per_month = True
 
 print 'inspecting training data...'
 data, label, meta = inspectData(train_dir)
@@ -144,8 +145,8 @@ print 'training results...'
 analyze(model, data, label, meta, False, percs)
 
 print 'validation results...'
-analyze(model, vdata, vlabel, vmeta, True, percs)
+analyze(model, vdata, vlabel, vmeta, per_month, percs)
 
 print 'testing results...'
-analyze(model, tdata, tlabel, tmeta, True, percs)
+analyze(model, tdata, tlabel, tmeta, per_month, percs)
 
