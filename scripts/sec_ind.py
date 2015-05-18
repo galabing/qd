@@ -22,6 +22,12 @@ for i in range(1, len(lines)):
 
 sector_headers = sorted(set(sectors))
 industry_headers = sorted(set(industries))
+print 'sectors:'
+for sector in sector_headers:
+  print '  %s' % sector
+print 'industries:'
+for industry in industry_headers:
+  print '  %s' % industry
 
 sector_index = {sector_headers[i]: i+1
                 for i in range(len(sector_headers))}

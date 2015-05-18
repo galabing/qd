@@ -3,6 +3,7 @@
 """ Trains a model based on training data, labels and model def.
 """
 
+from sklearn.ensemble import *
 from sklearn.linear_model import *
 from sklearn.svm import *
 import argparse

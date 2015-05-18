@@ -75,7 +75,9 @@ def collectData(ticker_file, gain_dir, max_neg, min_pos, feature_base_dir,
       assert (feature.startswith('pgain') or
               feature.startswith('pegain') or
               feature.startswith('logprice') or
-              feature.startswith('logvolume')), (
+              feature.startswith('logvolume') or
+              feature.startswith('sector') or
+              feature.startswith('industry')), (
           'no range info for feature %s' % feature)
       feature_ranges[feature] = [float('-Inf'), float('Inf')]
     lower, upper = feature_ranges[feature]
@@ -143,19 +145,24 @@ def collectData(ticker_file, gain_dir, max_neg, min_pos, feature_base_dir,
       features = [0.0 for i in range(len(feature_list))]
       feature_count = 0
       for i in range(len(feature_list)):
-        feature_dates = [item[0] for item in feature_items[i]]
-        index = bisect.bisect_right(feature_dates, gain_date) - 1
-        if index < 0:
-          skip_stats['index'] += 1
-          continue
+        if len(feature_items[i]) == 1 and feature_items[i][0][0] == '*':
+          # undated feature, eg sector
+          index = 0
+        else:
+          # dated feature, eg pgain
+          feature_dates = [item[0] for item in feature_items[i]]
+          index = bisect.bisect_right(feature_dates, gain_date) - 1
+          if index < 0:
+            skip_stats['index'] += 1
+            continue
 
-        gain_date_obj = datetime.datetime.strptime(gain_date, '%Y-%m-%d')
-        feature_date_obj = datetime.datetime.strptime(feature_dates[index],
-                                                      '%Y-%m-%d')
-        delta = (gain_date_obj - feature_date_obj).days
-        if delta > window:
-          skip_stats['window'] += 1
-          continue
+          gain_date_obj = datetime.datetime.strptime(gain_date, '%Y-%m-%d')
+          feature_date_obj = datetime.datetime.strptime(feature_dates[index],
+                                                        '%Y-%m-%d')
+          delta = (gain_date_obj - feature_date_obj).days
+          if delta > window:
+            skip_stats['window'] += 1
+            continue
 
         feature = feature_items[i][index][1]
         lower, upper = feature_ranges[feature_list[i]]
