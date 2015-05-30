@@ -16,6 +16,14 @@ def trainModel(trainer, data_file, label_file, model_def, perc, model_file):
                               perc, model_file))
   run(cmd)
 
+def trainModel2(trainer, data_file, label_file, meta_file, yyyymm, months,
+                model_def, perc, model_file):
+  cmd = ('%s --data_file=%s --label_file=%s --meta_file=%s --yyyymm=%s --months=%d '
+         '--model_def=\'%s\' --perc=%f --model_file=%s' % (
+         trainer, data_file, label_file, meta_file, yyyymm, months,
+         model_def, perc, model_file))
+  run(cmd)
+
 def computeError(model_file, data_file, label_file):
   print 'computing error for'
   print '  model: %s' % model_file

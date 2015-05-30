@@ -13,6 +13,15 @@ def test_getNextYm():
   assert utils.getNextYm('1984-02', 11) == '1985-01'
   assert utils.getNextYm('1984-02', 123) == '1994-05'
 
+def test_getPreviousYm():
+  assert utils.getPreviousYm('2015-05') == '2015-04'
+  assert utils.getPreviousYm('1984-01') == '1983-12'
+  assert utils.getPreviousYm('1984-02', 0) == '1984-02'
+  assert utils.getPreviousYm('1984-02', 1) == '1984-01'
+  assert utils.getPreviousYm('1984-02', 10) == '1983-04'
+  assert utils.getPreviousYm('1984-02', 11) == '1983-03'
+  assert utils.getPreviousYm('2004-02', 123) == '1993-11'
+
 def test_updateCountDict():
   d = dict()
   utils.updateCountDict(d, 'key1')

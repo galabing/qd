@@ -25,6 +25,18 @@ def getNextYm(ym, k=1):
     y += 1
   return '%02d-%02d' % (y, m)
 
+def getPreviousYm(ym, k=1):
+  assert k >= 0
+  y, m = ym.split('-')
+  y = int(y)
+  m = int(m)
+  y -= int(k/12)
+  m -= k % 12
+  if m < 1:
+    m += 12
+    y -= 1
+  return '%02d-%02d' % (y, m)
+
 def updateCountDict(count_dict, key):
   if key not in count_dict: count_dict[key] = 1
   else: count_dict[key] += 1

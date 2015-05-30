@@ -110,7 +110,14 @@ def analyze(model, data, label, meta, per_month, percs, num_buckets):
         tickers.add(item[3])
       print '  top %.2f%%:' % (perc*100)
       print '    score = %f' % items[index][0]
-      print '    count = %d (%d unique tickers)' % (index + 1, len(tickers))
+      if len(tickers) <= 5:
+        ticker_str = ', '.join(sorted(tickers))
+      else:
+        stickers = sorted(tickers)
+        ticker_str = '%s, %s, ..., %s, %s' % (stickers[0], stickers[1],
+                                              stickers[-2], stickers[-1])
+      print '    count = %d (%d unique tickers): %s' % (
+          index + 1, len(tickers), ticker_str)
       positives = sum([item[1] for item in items[:index+1]])
       precision = float(positives)/(index+1)
       print '    positives = %d (precision = %.2f%%)' % (
@@ -143,7 +150,7 @@ def analyze(model, data, label, meta, per_month, percs, num_buckets):
 exp_dir = '/Users/lnyang/lab/qd/data/experiments/P'
 
 model_dir = '%s/models' % exp_dir
-model = 'RandomForestClassifier-1000-2'
+model = 'RandomForestClassifier-100-2'
 
 fl_file = '%s/feature_list' % exp_dir
 train_dir = '%s/train' % exp_dir
