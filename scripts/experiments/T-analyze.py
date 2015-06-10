@@ -64,14 +64,14 @@ def writeBuckets(data, buckets, output_file):
     print >> fp, '%s\tavg' % ('\t'.join(['B%d' % (i+1) for i in range(buckets)]))
     print >> fp, '%s\t%f' % ('\t'.join(['%f' % h for h in histogram]), sum(histogram)/len(histogram))
 
-input_dir = '/Users/lnyang/lab/qd/data/experiments/Q/results'
+input_dir = '/Users/lnyang/lab/qd/data/experiments/T/results'
 output_dir = '%s/misc' % input_dir
 
-versions = [-1]
+versions = [60, 72, 84, 96, -1]
 delays = [0]
 
-ks = [3, 5, 10, 30, 50, 100, 300, 500, 0, -500, -300, -100, -50, -30, -10, -5, -3]
-buckets = None
+ks = [3, 5, 10, 0, -10, -5, -3]
+buckets = 10
 
 for version in versions:
   for delay in delays:
