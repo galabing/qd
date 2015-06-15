@@ -44,8 +44,16 @@ def writeKs(data, ks, output_file):
 
 def writeBuckets(data, buckets, output_file):
   assert buckets > 0
-  histogram = [0.0 for i in range(buckets)]
-  for items in data.itervalues():
+  total_histogram = [0.0 for i in range(buckets)]
+  total_months = 0
+  histograms = dict()  # year => histogram, months
+  for date, items in data.iteritems():
+    year, m = date.split('-')
+    if year not in histograms:
+      histograms[year] = [[0.0 for i in range(buckets)], 0]
+    histograms[year][1] += 1
+    histogram = histograms[year][0]
+
     gains = [item[1] for item in items]
     bucket_size = int(len(gains)/buckets)
     sizes = [bucket_size for i in range(buckets)]
@@ -53,16 +61,28 @@ def writeBuckets(data, buckets, output_file):
     for i in range(buckets - extra, buckets):
       sizes[i] += 1
     assert sum(sizes) == len(gains)
+
     p = 0
     for i in range(buckets):
       size = sizes[i]
-      histogram[i] += sum(gains[p:p+size]) / size
+      gain = sum(gains[p:p+size]) / size
+      histogram[i] += gain
+      total_histogram[i] += gain
       p += size
+    total_months += 1
+
+  for histogram, months in histograms.itervalues():
+    for i in range(buckets):
+      histogram[i] /= months
   for i in range(buckets):
-    histogram[i] /= len(data)
+    total_histogram[i] /= total_months
+
   with open(output_file, 'w') as fp:
-    print >> fp, '%s\tavg' % ('\t'.join(['B%d' % (i+1) for i in range(buckets)]))
-    print >> fp, '%s\t%f' % ('\t'.join(['%f' % h for h in histogram]), sum(histogram)/len(histogram))
+    print >> fp, 'year\t%s\tavg\tmonths' % ('\t'.join(['B%d' % (i+1) for i in range(buckets)]))
+    for year in sorted(histograms.keys()):
+      histogram, months = histograms[year]
+      print >> fp, '%s\t%s\t%f\t%d' % (year, '\t'.join(['%f' % h for h in histogram]), sum(histogram)/len(histogram), months)
+    print >> fp, 'all\t%s\t%f\t%d' % ('\t'.join(['%f' % h for h in total_histogram]), sum(total_histogram)/len(total_histogram), total_months)
 
 input_dir = '/Users/lnyang/lab/qd/data/experiments/Q/results'
 output_dir = '%s/misc' % input_dir
@@ -70,8 +90,8 @@ output_dir = '%s/misc' % input_dir
 versions = [-1]
 delays = [0]
 
-ks = [3, 5, 10, 30, 50, 100, 300, 500, 0, -500, -300, -100, -50, -30, -10, -5, -3]
-buckets = None
+ks = None  #[3, 5, 10, 30, 50, 100, 300, 500, 0, -500, -300, -100, -50, -30, -10, -5, -3]
+buckets = 10
 
 for version in versions:
   for delay in delays:
